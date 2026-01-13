@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subway Train Runner</title>
+<style>
+body {
+  margin: 0;
+  background: linear-gradient(#87ceeb, #ddd);
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+canvas { display: block; }
+#info {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(255,255,255,0.9);
+  padding: 10px;
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+<div id="info">🚆 Subway Train Runner<br>Score: <span id="score">0</span></div>
+<canvas id="game"></canvas>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let score = 0, speed = 6, gameOver = false;
+const train = { x: canvas.width/2-40, y: canvas.height-120, w:80, h:40 };
+const obstacles = [];
+function spawn(){ obstacles.push({x:Math.random()*(canvas.width-60),y:-30,w:60,h:20}); }
+setInterval(spawn,1000);
+function draw(){
+ if(gameOver) return;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="#e53935";
+ ctx.fillRect(train.x,train.y,train.w,train.h);
+ ctx.fillStyle="#333";
+ obstacles.forEach(o=>{
+  o.y+=speed;
+  ctx.fillRect(o.x,o.y,o.w,o.h);
+  if(train.x<o.x+o.w&&train.x+train.w>o.x&&train.y<o.y+o.h&&train.y+train.h>o.y){
+    gameOver=true; alert("Game Over! Score: "+score); location.reload();
+  }
+  if(o.y>canvas.height){ score++; document.getElementById("score").textContent=score; }
+ });
+ requestAnimationFrame(draw);
+}
+let tx=null;
+canvas.addEventListener("touchstart",e=>tx=e.touches[0].clientX);
+canvas.addEventListener("touchmove",e=>{
+ let dx=e.touches[0].clientX-tx;
+ train.x=Math.max(0,Math.min(canvas.width-train.w,train.x+dx));
+ tx=e.touches[0].clientX;
+});
+document.addEventListener("keydown",e=>{
+ if(e.key==="ArrowLeft") train.x-=30;
+ if(e.key==="ArrowRight") train.x+=30;
+});
+draw();
+</script>
+</body>
+</html>
